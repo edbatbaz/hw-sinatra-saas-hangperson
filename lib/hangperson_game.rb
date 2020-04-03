@@ -1,0 +1,98 @@
+class HangpersonGame
+
+  # add the necessary class methods, attributes, etc. here
+  # to make the tests in spec/hangperson_game_spec.rb pass.
+
+  # Get a word from remote "random word" service
+
+  # def initialize()
+  # end
+  attr_accessor :word
+  attr_accessor :guesses
+  attr_accessor :wrong_guesses
+
+  def initialize(word)
+    @word = word
+    @guesses = ''
+    @wrong_guesses = ''
+  end
+
+  # You can test it by running $ bundle exec irb -I. -r app.rb
+  # And then in the irb: irb(main):001:0> HangpersonGame.get_random_word
+  #  => "cooking"   <-- some random word
+  def self.get_random_word
+    require 'uri'
+    require 'net/http'
+    uri = URI('http://watchout4snakes.com/wo4snakes/Random/RandomWord')
+    Net::HTTP.new('watchout4snakes.com').start { |http|
+      return http.post(uri, "").body
+    }
+  end
+
+  def guess(letter)
+    if letter.nil? || letter == ''
+      raise ArgumentError
+    end
+    if (letter.match(/[^A-Za-z]/))
+      raise ArgumentError, "No numbers"
+    end
+    letter=letter.downcase()
+    lists=@word.split("")
+    lists.each do |list|
+      if(letter==list)
+        @wrong_guesses+=""
+        if(!@guesses.include?letter)
+          @guesses+=letter
+          return true
+        end
+        return false
+      end
+    end
+    @guesses+= ''
+    if(!@wrong_guesses.include?letter)
+      @wrong_guesses+=letter
+      return true
+    end
+    return false
+  end
+
+  def word_with_guesses
+     current= ''
+     var= 0
+     guess=@guesses.split("")
+     temps=@word.split("")
+     temps.each do |temp|
+       guess.each do |a|
+         if(temp == a)
+           current += a
+           var = 1
+         end
+       end
+       if (var == 0)
+         current += '-'
+       end
+       var = 0
+     end
+     return current
+   end
+   def check_win_or_lose
+    count = 0
+    temps = @word.split("")
+    comps = @guesses.split("")
+    temps.each do |temp|
+      comps.each do|comp|
+      if(comp==temp)
+        count += 1
+        break
+      end
+    end
+  end
+  if (@wrong_guesses.length == 7)
+    :lose
+  elsif (temps.length == count)
+    :win
+  else
+    :play
+  end
+  end
+end
